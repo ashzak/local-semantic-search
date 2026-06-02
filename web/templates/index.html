@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Local Semantic Search</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Local Semantic Search</h1>
+          <p>{{ chunk_count }} indexed chunks</p>
+        </div>
+        <form method="post" action="/reindex">
+          <button type="submit">Reindex</button>
+        </form>
+      </header>
+
+      <form class="search" method="post" action="/search">
+        <input name="q" value="{{ query }}" placeholder="Search your local docs" autofocus>
+        <button type="submit">Search</button>
+      </form>
+
+      {% if query %}
+        <section class="results">
+          {% for result in results %}
+            <article class="result">
+              <div class="meta">
+                <span>{{ "%.3f"|format(result.score) }}</span>
+                <span>{{ result.chunk.source }}</span>
+              </div>
+              <h2>{{ result.chunk.title }}</h2>
+              <p>{{ result.chunk.text }}</p>
+            </article>
+          {% else %}
+            <p class="empty">No matches found.</p>
+          {% endfor %}
+        </section>
+      {% else %}
+        <section class="empty">
+          <p>Enter a query to search the sample documents, or add your own Markdown/text files to the docs folder and reindex.</p>
+        </section>
+      {% endif %}
+    </main>
+  </body>
+</html>
