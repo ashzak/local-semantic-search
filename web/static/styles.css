@@ -118,13 +118,29 @@ input[type="file"] {
   gap: 8px;
 }
 
-.documents span {
+.document {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
   border: 1px solid #d7d1c5;
-  border-radius: 999px;
-  padding: 5px 9px;
+  border-radius: 8px;
   background: #fffdfa;
+}
+
+.document span {
+  padding: 6px 9px;
   color: #56616c;
   font-size: 13px;
+}
+
+.document button {
+  height: 30px;
+  border-left: 1px solid #d7d1c5;
+  border-radius: 0;
+  padding: 0 9px;
+  background: #f8e9e7;
+  color: #9c3328;
+  font-size: 12px;
 }
 
 .results {

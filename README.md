@@ -11,6 +11,7 @@ A small local semantic search engine with:
 - CLI
 - FastAPI web UI
 - browser-based document upload
+- document deletion with automatic reindexing
 - highlighted query terms in results
 
 By default, the indexer uses `sentence-transformers/all-MiniLM-L6-v2` when Sentence Transformers is installed. If that optional dependency is missing, it falls back to a dependency-light local hashing embedder.
@@ -76,3 +77,5 @@ semantic-search build docs
 or click `Reindex` in the web UI.
 
 You can also upload `.md`, `.txt`, or `.rst` files directly from the web UI. Uploaded documents are saved into `docs/` and indexed immediately.
+
+Use the `Remove` button beside a document in the web UI to delete it and rebuild the index.

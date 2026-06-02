@@ -39,7 +39,11 @@
 
         <div class="documents">
           {% for document in documents %}
-            <span>{{ document }}</span>
+            <form class="document" method="post" action="/documents/delete">
+              <input type="hidden" name="filename" value="{{ document }}">
+              <span>{{ document }}</span>
+              <button type="submit" aria-label="Delete {{ document }}">Remove</button>
+            </form>
           {% endfor %}
         </div>
       </section>

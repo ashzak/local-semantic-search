@@ -91,6 +91,18 @@ async def upload_document(file: UploadFile = File(...)) -> RedirectResponse:
     return _redirect_with_message(notice=f"Uploaded and indexed {destination.name}.")
 
 
+@app.post("/documents/delete")
+def delete_document(filename: str = Form(...)) -> RedirectResponse:
+    path = _document_path(filename)
+    if path is None or not path.exists():
+        return _redirect_with_message(error="Document was not found.")
+
+    path.unlink()
+    index = SearchIndex.build(DOCS_PATH)
+    index.save(INDEX_PATH)
+    return _redirect_with_message(notice=f"Deleted and reindexed {path.name}.")
+
+
 def _load_or_build_index() -> SearchIndex:
     if INDEX_PATH.exists():
         return SearchIndex.load(INDEX_PATH)
@@ -132,6 +144,19 @@ def _available_path(path: Path) -> Path:
         if not candidate.exists():
             return candidate
     raise RuntimeError(f"Could not create a unique filename for {path.name}")
+
+
+def _document_path(filename: str) -> Path | None:
+    name = Path(filename).name
+    if name != filename or not name:
+        return None
+
+    path = DOCS_PATH / name
+    if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+        return None
+    if not path.resolve().is_relative_to(DOCS_PATH.resolve()):
+        return None
+    return path
 
 
 def _redirect_with_message(*, notice: str = "", error: str = "") -> RedirectResponse:
