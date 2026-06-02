@@ -160,6 +160,13 @@ h2 {
   line-height: 1.55;
 }
 
+mark {
+  border-radius: 3px;
+  padding: 0 2px;
+  background: #ffe48a;
+  color: inherit;
+}
+
 .empty {
   color: #65717c;
 }

@@ -50,10 +50,10 @@
             <article class="result">
               <div class="meta">
                 <span>{{ "%.3f"|format(result.score) }}</span>
-                <span>{{ result.chunk.source }}</span>
+                <span>{{ result.source }}</span>
               </div>
-              <h2>{{ result.chunk.title }}</h2>
-              <p>{{ result.chunk.text }}</p>
+              <h2>{{ result.title_html | safe }}</h2>
+              <p>{{ result.text_html | safe }}</p>
             </article>
           {% else %}
             <p class="empty">No matches found.</p>

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import html
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -22,10 +24,22 @@ app.mount("/static", StaticFiles(directory=ROOT / "web" / "static"), name="stati
 templates = Jinja2Templates(directory=ROOT / "web" / "templates")
 
 
+@dataclass(frozen=True)
+class HighlightedResult:
+    score: float
+    source: str
+    title_html: str
+    text_html: str
+
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, q: str = "", notice: str = "", error: str = "") -> HTMLResponse:
     index = _load_or_build_index()
-    results = index.search(q, limit=8) if q.strip() else []
+    results = (
+        [_highlight_result(result, q) for result in index.search(q, limit=8)]
+        if q.strip()
+        else []
+    )
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -123,3 +137,34 @@ def _available_path(path: Path) -> Path:
 def _redirect_with_message(*, notice: str = "", error: str = "") -> RedirectResponse:
     params = {key: value for key, value in {"notice": notice, "error": error}.items() if value}
     return RedirectResponse(f"/?{urlencode(params)}", status_code=303)
+
+
+def _highlight_result(result, query: str) -> HighlightedResult:
+    terms = _highlight_terms(query)
+    return HighlightedResult(
+        score=result.score,
+        source=result.chunk.source,
+        title_html=_highlight_text(result.chunk.title, terms),
+        text_html=_highlight_text(result.chunk.text, terms),
+    )
+
+
+def _highlight_terms(query: str) -> list[str]:
+    terms = {
+        term.lower()
+        for term in re.findall(r"[A-Za-z0-9]{3,}", query)
+        if not term.isdigit()
+    }
+    return sorted(terms, key=len, reverse=True)
+
+
+def _highlight_text(text: str, terms: list[str]) -> str:
+    escaped = html.escape(text)
+    if not terms:
+        return escaped
+
+    pattern = re.compile(
+        r"\b(" + "|".join(re.escape(term) for term in terms) + r")\b",
+        flags=re.IGNORECASE,
+    )
+    return pattern.sub(r"<mark>\1</mark>", escaped)
