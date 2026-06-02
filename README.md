@@ -13,6 +13,7 @@ A small local semantic search engine with:
 - browser-based document upload
 - document deletion with automatic reindexing
 - highlighted query terms in results
+- local extractive answer panel for search queries
 
 By default, the indexer uses `sentence-transformers/all-MiniLM-L6-v2` when Sentence Transformers is installed. If that optional dependency is missing, it falls back to a dependency-light local hashing embedder.
 

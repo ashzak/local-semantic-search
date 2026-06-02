@@ -32,20 +32,25 @@ class HighlightedResult:
     text_html: str
 
 
+@dataclass(frozen=True)
+class Answer:
+    text_html: str
+    sources: list[str]
+
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, q: str = "", notice: str = "", error: str = "") -> HTMLResponse:
     index = _load_or_build_index()
-    results = (
-        [_highlight_result(result, q) for result in index.search(q, limit=8)]
-        if q.strip()
-        else []
-    )
+    raw_results = index.search(q, limit=8) if q.strip() else []
+    results = [_highlight_result(result, q) for result in raw_results]
+    answer = _build_answer(raw_results, q) if q.strip() else None
     return templates.TemplateResponse(
         request,
         "index.html",
         {
             "query": q,
             "results": results,
+            "answer": answer,
             "chunk_count": len(index.chunks),
             "embedder": index.describe_embedder(),
             "documents": _list_documents(),
@@ -193,3 +198,47 @@ def _highlight_text(text: str, terms: list[str]) -> str:
         flags=re.IGNORECASE,
     )
     return pattern.sub(r"<mark>\1</mark>", escaped)
+
+
+def _build_answer(results, query: str) -> Answer | None:
+    terms = _highlight_terms(query)
+    if not results:
+        return None
+
+    candidates: list[tuple[float, str, str]] = []
+    for result in results[:4]:
+        for sentence in _sentences(result.chunk.text):
+            score = _sentence_score(sentence, terms)
+            if score > 0:
+                candidates.append((score + result.score, sentence, result.chunk.source))
+
+    if not candidates:
+        top = results[0]
+        return Answer(
+            text_html=_highlight_text(_compact_text(top.chunk.text), terms),
+            sources=[top.chunk.source],
+        )
+
+    candidates.sort(key=lambda candidate: candidate[0], reverse=True)
+    selected = candidates[:3]
+    answer_text = " ".join(sentence for _, sentence, _ in selected)
+    sources = sorted({source for _, _, source in selected})
+    return Answer(text_html=_highlight_text(answer_text, terms), sources=sources)
+
+
+def _sentences(text: str) -> list[str]:
+    compact = _compact_text(text)
+    return [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+", compact)
+        if len(sentence.strip()) >= 30
+    ]
+
+
+def _sentence_score(sentence: str, terms: list[str]) -> float:
+    lowered = sentence.lower()
+    return sum(1.0 for term in terms if re.search(rf"\b{re.escape(term)}\b", lowered))
+
+
+def _compact_text(text: str) -> str:
+    return " ".join(text.split())

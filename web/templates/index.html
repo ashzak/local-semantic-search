@@ -49,6 +49,18 @@
       </section>
 
       {% if query %}
+        {% if answer %}
+          <section class="answer">
+            <div class="meta">
+              <span>Answer</span>
+              {% for source in answer.sources %}
+                <span>{{ source }}</span>
+              {% endfor %}
+            </div>
+            <p>{{ answer.text_html | safe }}</p>
+          </section>
+        {% endif %}
+
         <section class="results">
           {% for result in results %}
             <article class="result">

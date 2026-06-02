@@ -143,6 +143,19 @@ input[type="file"] {
   font-size: 12px;
 }
 
+.answer {
+  margin-bottom: 18px;
+  border-left: 4px solid #135e5a;
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: #e8f4ef;
+}
+
+.answer p {
+  margin: 0;
+  line-height: 1.55;
+}
+
 .results {
   display: grid;
   gap: 12px;
