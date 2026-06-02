@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+from pypdf import PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 import semantic_search.app as app_module
 from semantic_search.app import _build_answer, _document_path, _highlight_text
@@ -100,3 +102,51 @@ def test_upload_rejects_unsupported_file(monkeypatch, tmp_path: Path) -> None:
     assert response.status_code == 200
     assert "Unsupported file type." in response.text
     assert not (docs / "script.py").exists()
+
+
+def test_upload_accepts_pdf_extension(monkeypatch, tmp_path: Path) -> None:
+    docs = tmp_path / "docs"
+    data = tmp_path / "data"
+    docs.mkdir()
+    data.mkdir()
+    (docs / "base.md").write_text("# Base\n\nContent.", encoding="utf-8")
+    monkeypatch.setattr(app_module, "DOCS_PATH", docs)
+    monkeypatch.setattr(app_module, "INDEX_PATH", data / "index.json")
+    pdf = _text_pdf_bytes("PDF billing notes")
+
+    client = TestClient(app_module.app)
+    response = client.post(
+        "/upload",
+        files={"file": ("notes.pdf", pdf, "application/pdf")},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert "Uploaded and indexed notes.pdf." in response.text
+    assert (docs / "notes.pdf").exists()
+
+
+def _text_pdf_bytes(text: str) -> bytes:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=300, height=200)
+
+    stream = DecodedStreamObject()
+    stream.set_data(f"BT /F1 12 Tf 20 120 Td ({text}) Tj ET".encode("utf-8"))
+    page.replace_contents(stream)
+
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+    )
+
+    import io
+
+    output = io.BytesIO()
+    writer.write(output)
+    return output.getvalue()

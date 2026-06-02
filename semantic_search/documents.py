@@ -4,7 +4,7 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 
 
-SUPPORTED_EXTENSIONS = {".md", ".txt", ".rst"}
+SUPPORTED_EXTENSIONS = {".md", ".pdf", ".rst", ".txt"}
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ def load_chunks(path: Path, chunk_size: int = 900, overlap: int = 150) -> list[C
     files = _iter_files(path)
     chunks: list[Chunk] = []
     for file_path in files:
-        text = file_path.read_text(encoding="utf-8", errors="ignore").strip()
+        text = _read_document(file_path).strip()
         if not text:
             continue
 
@@ -65,11 +65,34 @@ def _iter_files(path: Path) -> list[Path]:
 
 
 def _title_for(path: Path, text: str) -> str:
+    if path.suffix.lower() == ".pdf":
+        return path.stem.replace("-", " ").replace("_", " ").title()
+
     for line in text.splitlines():
         line = line.strip()
         if line.startswith("#"):
             return line.lstrip("#").strip() or path.stem
     return path.stem.replace("-", " ").replace("_", " ").title()
+
+
+def _read_document(path: Path) -> str:
+    if path.suffix.lower() == ".pdf":
+        return _read_pdf(path)
+    return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def _read_pdf(path: Path) -> str:
+    try:
+        from pypdf import PdfReader
+        from pypdf.errors import PdfReadError
+    except ImportError as exc:
+        raise RuntimeError("PDF support requires pypdf. Install with: pip install pypdf") from exc
+
+    try:
+        reader = PdfReader(path)
+    except PdfReadError:
+        return ""
+    return "\n\n".join(page.extract_text() or "" for page in reader.pages)
 
 
 def _split_text(text: str, chunk_size: int, overlap: int) -> list[str]:

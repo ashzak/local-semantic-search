@@ -4,7 +4,7 @@ A local semantic search engine for Markdown, text, and reStructuredText document
 
 ## Features
 
-- Load `.md`, `.txt`, and `.rst` documents
+- Load `.md`, `.pdf`, `.txt`, and `.rst` documents
 - Split documents into searchable chunks
 - Use transformer embeddings with Sentence Transformers
 - Fall back to hashed word/character n-gram embeddings without model downloads
@@ -78,7 +78,7 @@ The Docker image builds the sample index with the lightweight hashing backend. F
 
 ## Manage Documents
 
-Put `.md`, `.txt`, or `.rst` files in `docs/`, then run:
+Put `.md`, `.pdf`, `.txt`, or `.rst` files in `docs/`, then run:
 
 ```bash
 semantic-search build docs
