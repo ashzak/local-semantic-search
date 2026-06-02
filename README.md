@@ -1,21 +1,20 @@
 # Local Semantic Search
 
-A small local semantic search engine with:
+A local semantic search engine for Markdown, text, and reStructuredText documents. It includes a CLI, a FastAPI web UI, document upload/delete controls, highlighted results, and a local extractive answer panel.
 
-- document loading for Markdown, text, and reStructuredText files
-- chunking
-- transformer embeddings through Sentence Transformers
-- hashed word/character n-gram embeddings as a no-download fallback
-- cosine similarity search
-- persisted local JSON index
-- CLI
-- FastAPI web UI
-- browser-based document upload
-- document deletion with automatic reindexing
-- highlighted query terms in results
-- local extractive answer panel for search queries
+## Features
 
-By default, the indexer uses `sentence-transformers/all-MiniLM-L6-v2` when Sentence Transformers is installed. If that optional dependency is missing, it falls back to a dependency-light local hashing embedder.
+- Load `.md`, `.txt`, and `.rst` documents
+- Split documents into searchable chunks
+- Use transformer embeddings with Sentence Transformers
+- Fall back to hashed word/character n-gram embeddings without model downloads
+- Persist a local JSON index
+- Search from the CLI
+- Search from the browser
+- Upload documents from the browser
+- Delete documents and reindex automatically
+- Highlight query terms in results
+- Generate a local extractive answer from top results
 
 ## Setup
 
@@ -30,6 +29,8 @@ For higher quality transformer embeddings:
 ```bash
 pip install -e '.[transformers]'
 ```
+
+By default, the indexer uses `sentence-transformers/all-MiniLM-L6-v2` when Sentence Transformers is installed. If that optional dependency is missing, it falls back to the dependency-light hashing embedder.
 
 ## Build The Index
 
@@ -61,13 +62,21 @@ semantic-search search "how do I answer questions over documents?"
 uvicorn semantic_search.app:app --reload
 ```
 
-Then open:
+Open:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-## Add Your Own Documents
+## Run With Docker
+
+```bash
+docker compose up --build
+```
+
+The Docker image builds the sample index with the lightweight hashing backend. For transformer embeddings, run the Python setup locally and build the index with `--backend transformer`.
+
+## Manage Documents
 
 Put `.md`, `.txt`, or `.rst` files in `docs/`, then run:
 
@@ -75,8 +84,30 @@ Put `.md`, `.txt`, or `.rst` files in `docs/`, then run:
 semantic-search build docs
 ```
 
-or click `Reindex` in the web UI.
-
-You can also upload `.md`, `.txt`, or `.rst` files directly from the web UI. Uploaded documents are saved into `docs/` and indexed immediately.
+You can also upload files directly from the web UI. Uploaded documents are saved into `docs/` and indexed immediately.
 
 Use the `Remove` button beside a document in the web UI to delete it and rebuild the index.
+
+## Run Tests
+
+```bash
+pip install -e '.[dev]'
+pytest
+```
+
+## Project Layout
+
+```text
+semantic_search/
+  app.py         FastAPI routes and UI view models
+  cli.py         command-line interface
+  documents.py   document loading and chunking
+  embedding.py   hashing and transformer embedders
+  index.py       index persistence and search
+web/
+  templates/     Jinja templates
+  static/        CSS
+docs/            local documents to index
+data/            generated index files
+tests/           pytest coverage
+```

@@ -3,6 +3,7 @@ name = "local-semantic-search"
 version = "0.1.0"
 description = "A local semantic search engine with a CLI and web UI."
 requires-python = ">=3.11"
+readme = "README.md"
 dependencies = [
   "fastapi>=0.115.0",
   "uvicorn>=0.30.0",
@@ -14,6 +15,13 @@ dependencies = [
 transformers = [
   "sentence-transformers>=3.0.0",
 ]
+dev = [
+  "httpx>=0.28.0",
+  "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [project.scripts]
 semantic-search = "semantic_search.cli:main"
