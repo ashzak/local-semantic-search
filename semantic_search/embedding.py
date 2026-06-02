@@ -3,12 +3,13 @@ from __future__ import annotations
 import hashlib
 import math
 import re
-from typing import Protocol
 from collections.abc import Iterable
+from typing import Protocol
 
 
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
 DEFAULT_TRANSFORMER_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+_EMBEDDER_CACHE: dict[tuple[str, int, str], "Embedder"] = {}
 
 SYNONYMS = {
     "answer": ("question", "response", "qa"),
@@ -129,16 +130,33 @@ def create_embedder(
     dimensions: int = 2048,
     model_name: str = DEFAULT_TRANSFORMER_MODEL,
 ) -> Embedder:
-    if backend == "hashing":
-        return HashingEmbedder(dimensions=dimensions)
-    if backend in {"sentence-transformers", "transformer"}:
-        return SentenceTransformerEmbedder(model_name=model_name)
+    resolved_backend = "sentence-transformers" if backend == "transformer" else backend
+    if resolved_backend == "hashing":
+        return _cached_embedder("hashing", dimensions, model_name)
+    if resolved_backend == "sentence-transformers":
+        return _cached_embedder("sentence-transformers", dimensions, model_name)
     if backend == "auto":
         try:
-            return SentenceTransformerEmbedder(model_name=model_name)
+            return _cached_embedder("sentence-transformers", dimensions, model_name)
         except RuntimeError:
-            return HashingEmbedder(dimensions=dimensions)
+            return _cached_embedder("hashing", dimensions, model_name)
     raise ValueError(f"Unknown embedding backend: {backend}")
+
+
+def clear_embedder_cache() -> None:
+    _EMBEDDER_CACHE.clear()
+
+
+def _cached_embedder(backend: str, dimensions: int, model_name: str) -> Embedder:
+    key = (backend, dimensions, model_name)
+    if key not in _EMBEDDER_CACHE:
+        if backend == "hashing":
+            _EMBEDDER_CACHE[key] = HashingEmbedder(dimensions=dimensions)
+        elif backend == "sentence-transformers":
+            _EMBEDDER_CACHE[key] = SentenceTransformerEmbedder(model_name=model_name)
+        else:
+            raise ValueError(f"Unknown embedding backend: {backend}")
+    return _EMBEDDER_CACHE[key]
 
 
 def cosine(left: list[float], right: list[float]) -> float:
