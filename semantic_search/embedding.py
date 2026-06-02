@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+from typing import Protocol
 from collections.abc import Iterable
 
 
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
+DEFAULT_TRANSFORMER_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 SYNONYMS = {
     "answer": ("question", "response", "qa"),
@@ -30,8 +32,24 @@ SYNONYMS = {
 }
 
 
+class Embedder(Protocol):
+    name: str
+    dimensions: int
+
+    def embed(self, text: str) -> list[float]:
+        ...
+
+    def embed_many(self, texts: Iterable[str]) -> list[list[float]]:
+        ...
+
+    def metadata(self) -> dict[str, str | int]:
+        ...
+
+
 class HashingEmbedder:
     """Dependency-light embedding using word and character n-gram hashing."""
+
+    name = "hashing"
 
     def __init__(self, dimensions: int = 2048) -> None:
         if dimensions <= 0:
@@ -57,6 +75,70 @@ class HashingEmbedder:
 
     def embed_many(self, texts: Iterable[str]) -> list[list[float]]:
         return [self.embed(text) for text in texts]
+
+    def metadata(self) -> dict[str, str | int]:
+        return {"backend": self.name, "dimensions": self.dimensions}
+
+
+class SentenceTransformerEmbedder:
+    """Transformer-backed embeddings from the sentence-transformers package."""
+
+    name = "sentence-transformers"
+
+    def __init__(self, model_name: str = DEFAULT_TRANSFORMER_MODEL) -> None:
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError as exc:
+            raise RuntimeError(
+                "sentence-transformers is not installed. "
+                "Install it with: pip install -e '.[transformers]'"
+            ) from exc
+
+        self.model_name = model_name
+        self.model = SentenceTransformer(model_name)
+        if hasattr(self.model, "get_embedding_dimension"):
+            dimensions = self.model.get_embedding_dimension()
+        else:
+            dimensions = self.model.get_sentence_embedding_dimension()
+        if dimensions is None:
+            raise RuntimeError(f"Could not detect embedding dimensions for {model_name}")
+        self.dimensions = int(dimensions)
+
+    def embed(self, text: str) -> list[float]:
+        return self.embed_many([text])[0]
+
+    def embed_many(self, texts: Iterable[str]) -> list[list[float]]:
+        embeddings = self.model.encode(
+            list(texts),
+            normalize_embeddings=True,
+            show_progress_bar=False,
+        )
+        return [embedding.tolist() for embedding in embeddings]
+
+    def metadata(self) -> dict[str, str | int]:
+        return {
+            "backend": self.name,
+            "model": self.model_name,
+            "dimensions": self.dimensions,
+        }
+
+
+def create_embedder(
+    backend: str = "auto",
+    *,
+    dimensions: int = 2048,
+    model_name: str = DEFAULT_TRANSFORMER_MODEL,
+) -> Embedder:
+    if backend == "hashing":
+        return HashingEmbedder(dimensions=dimensions)
+    if backend in {"sentence-transformers", "transformer"}:
+        return SentenceTransformerEmbedder(model_name=model_name)
+    if backend == "auto":
+        try:
+            return SentenceTransformerEmbedder(model_name=model_name)
+        except RuntimeError:
+            return HashingEmbedder(dimensions=dimensions)
+    raise ValueError(f"Unknown embedding backend: {backend}")
 
 
 def cosine(left: list[float], right: list[float]) -> float:

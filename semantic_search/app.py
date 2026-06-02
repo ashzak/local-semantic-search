@@ -30,6 +30,7 @@ def home(request: Request, q: str = "") -> HTMLResponse:
             "query": q,
             "results": results,
             "chunk_count": len(index.chunks),
+            "embedder": index.describe_embedder(),
         },
     )
 

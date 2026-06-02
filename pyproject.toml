@@ -10,6 +10,11 @@ dependencies = [
   "python-multipart>=0.0.9",
 ]
 
+[project.optional-dependencies]
+transformers = [
+  "sentence-transformers>=3.0.0",
+]
+
 [project.scripts]
 semantic-search = "semantic_search.cli:main"
 

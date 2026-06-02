@@ -4,13 +4,14 @@ A small local semantic search engine with:
 
 - document loading for Markdown, text, and reStructuredText files
 - chunking
-- hashed word/character n-gram embeddings
+- transformer embeddings through Sentence Transformers
+- hashed word/character n-gram embeddings as a no-download fallback
 - cosine similarity search
 - persisted local JSON index
 - CLI
 - FastAPI web UI
 
-The default embedder is dependency-light so the project runs locally without downloading a model. For stronger semantic quality, replace `HashingEmbedder` with a transformer-backed embedder such as a Sentence Transformers model.
+By default, the indexer uses `sentence-transformers/all-MiniLM-L6-v2` when Sentence Transformers is installed. If that optional dependency is missing, it falls back to a dependency-light local hashing embedder.
 
 ## Setup
 
@@ -20,10 +21,28 @@ source .venv/bin/activate
 pip install -e .
 ```
 
+For higher quality transformer embeddings:
+
+```bash
+pip install -e '.[transformers]'
+```
+
 ## Build The Index
 
 ```bash
 semantic-search build docs
+```
+
+Force transformer embeddings:
+
+```bash
+semantic-search build docs --backend transformer
+```
+
+Use the lightweight fallback explicitly:
+
+```bash
+semantic-search build docs --backend hashing
 ```
 
 ## Search From The CLI
