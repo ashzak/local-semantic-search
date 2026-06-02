@@ -1,6 +1,8 @@
 # Local Semantic Search
 
-A local semantic search engine for Markdown, text, and reStructuredText documents. It includes a CLI, a FastAPI web UI, document upload/delete controls, highlighted results, and a local extractive answer panel.
+A local semantic search engine for Markdown, PDF, text, and reStructuredText documents. It includes a CLI, a FastAPI web UI, document upload/delete controls, highlighted results, and a local extractive answer panel.
+
+![Search answer panel](assets/search-answer-panel.png)
 
 ## Features
 
@@ -31,6 +33,15 @@ pip install -e '.[transformers]'
 ```
 
 By default, the indexer uses `sentence-transformers/all-MiniLM-L6-v2` when Sentence Transformers is installed. If that optional dependency is missing, it falls back to the dependency-light hashing embedder.
+
+## Quick Commands
+
+```bash
+make install-dev
+make index
+make run
+make test
+```
 
 ## Build The Index
 
@@ -78,6 +89,8 @@ The Docker image builds the sample index with the lightweight hashing backend. F
 
 ## Manage Documents
 
+![Upload and document management UI](assets/upload-ui.png)
+
 Put `.md`, `.pdf`, `.txt`, or `.rst` files in `docs/`, then run:
 
 ```bash
@@ -111,3 +124,7 @@ docs/            local documents to index
 data/            generated index files
 tests/           pytest coverage
 ```
+
+## License
+
+MIT

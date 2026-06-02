@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A local semantic search engine with a CLI and web UI."
 requires-python = ">=3.11"
 readme = "README.md"
+license = "MIT"
 dependencies = [
   "fastapi>=0.115.0",
   "uvicorn>=0.30.0",
