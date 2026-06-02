@@ -49,6 +49,40 @@ def test_document_path_rejects_traversal(monkeypatch, tmp_path: Path) -> None:
     assert _document_path("bad.py") is None
 
 
+def test_document_detail_renders_source_text(monkeypatch, tmp_path: Path) -> None:
+    docs = tmp_path / "docs"
+    data = tmp_path / "data"
+    docs.mkdir()
+    data.mkdir()
+    (docs / "support.md").write_text(
+        "# Support\n\nCustomers need billing help.",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(app_module, "DOCS_PATH", docs)
+    monkeypatch.setattr(app_module, "INDEX_PATH", data / "index.json")
+
+    client = TestClient(app_module.app)
+    response = client.get("/documents/support.md")
+
+    assert response.status_code == 200
+    assert "Support" in response.text
+    assert "Customers need billing help." in response.text
+
+
+def test_document_detail_rejects_traversal(monkeypatch, tmp_path: Path) -> None:
+    docs = tmp_path / "docs"
+    data = tmp_path / "data"
+    docs.mkdir()
+    data.mkdir()
+    monkeypatch.setattr(app_module, "DOCS_PATH", docs)
+    monkeypatch.setattr(app_module, "INDEX_PATH", data / "index.json")
+
+    client = TestClient(app_module.app)
+    response = client.get("/documents/..%2FREADME.md", follow_redirects=True)
+
+    assert response.status_code == 404
+
+
 def test_upload_and_delete_document_routes(monkeypatch, tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     data = tmp_path / "data"

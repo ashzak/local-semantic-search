@@ -53,6 +53,12 @@ def load_chunks(path: Path, chunk_size: int = 900, overlap: int = 150) -> list[C
     return chunks
 
 
+def read_document_text(path: Path) -> str:
+    if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+        raise ValueError(f"Unsupported document type: {path.suffix}")
+    return _read_document(path)
+
+
 def _iter_files(path: Path) -> list[Path]:
     if path.is_file():
         return [path] if path.suffix.lower() in SUPPORTED_EXTENSIONS else []

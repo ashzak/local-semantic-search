@@ -13,6 +13,7 @@ A local semantic search engine for Markdown, PDF, text, and reStructuredText doc
 - Persist a local JSON index
 - Search from the CLI
 - Search from the browser
+- Open source documents from search results
 - Upload documents from the browser
 - Delete documents and reindex automatically
 - Highlight query terms in results

@@ -11,7 +11,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from semantic_search.documents import SUPPORTED_EXTENSIONS
+from semantic_search.documents import SUPPORTED_EXTENSIONS, read_document_text
 from semantic_search.index import SearchIndex
 
 
@@ -38,6 +38,13 @@ class Answer:
     sources: list[str]
 
 
+@dataclass(frozen=True)
+class DocumentView:
+    filename: str
+    title: str
+    text: str
+
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, q: str = "", notice: str = "", error: str = "") -> HTMLResponse:
     index = _load_or_build_index()
@@ -56,6 +63,26 @@ def home(request: Request, q: str = "", notice: str = "", error: str = "") -> HT
             "documents": _list_documents(),
             "notice": notice,
             "error": error,
+        },
+    )
+
+
+@app.get("/documents/{filename}", response_class=HTMLResponse)
+def document_detail(request: Request, filename: str):
+    path = _document_path(filename)
+    if path is None or not path.exists():
+        return _redirect_with_message(error="Document was not found.")
+
+    document = DocumentView(
+        filename=path.name,
+        title=path.stem.replace("-", " ").replace("_", " ").title(),
+        text=read_document_text(path).strip() or "No extractable text found.",
+    )
+    return templates.TemplateResponse(
+        request,
+        "document.html",
+        {
+            "document": document,
         },
     )
 

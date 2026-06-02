@@ -71,6 +71,21 @@ button {
   cursor: pointer;
 }
 
+a {
+  color: inherit;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  border-radius: 8px;
+  padding: 0 14px;
+  background: #135e5a;
+  color: white;
+  text-decoration: none;
+}
+
 .search button {
   height: 48px;
   min-width: 104px;
@@ -127,10 +142,11 @@ input[type="file"] {
   background: #fffdfa;
 }
 
-.document span {
+.document a {
   padding: 6px 9px;
   color: #56616c;
   font-size: 13px;
+  text-decoration: none;
 }
 
 .document button {
@@ -177,6 +193,10 @@ input[type="file"] {
   font-size: 13px;
 }
 
+.meta a {
+  color: #65717c;
+}
+
 h2 {
   margin: 0 0 8px;
   font-size: 18px;
@@ -194,6 +214,21 @@ mark {
   padding: 0 2px;
   background: #ffe48a;
   color: inherit;
+}
+
+.document-detail {
+  border: 1px solid #ddd8cd;
+  border-radius: 8px;
+  background: #fffdfa;
+}
+
+.document-detail pre {
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  padding: 18px;
+  color: #26323c;
+  font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 .empty {
