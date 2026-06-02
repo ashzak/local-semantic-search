@@ -14,7 +14,8 @@ body {
 }
 
 button,
-input {
+input,
+label {
   font: inherit;
 }
 
@@ -43,11 +44,11 @@ h1 {
   color: #65717c;
 }
 
-.search {
+.search,
+.upload {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
-  margin-bottom: 24px;
 }
 
 input {
@@ -73,6 +74,57 @@ button {
 .search button {
   height: 48px;
   min-width: 104px;
+}
+
+.message {
+  margin: 0 0 14px;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.success {
+  background: #e8f4ef;
+  color: #135e5a;
+}
+
+.error {
+  background: #f8e9e7;
+  color: #9c3328;
+}
+
+.library {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 24px;
+}
+
+.upload {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+}
+
+.upload label {
+  color: #34414c;
+  font-weight: 600;
+}
+
+input[type="file"] {
+  padding: 10px 12px;
+}
+
+.documents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.documents span {
+  border: 1px solid #d7d1c5;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #fffdfa;
+  color: #56616c;
+  font-size: 13px;
 }
 
 .results {
@@ -119,6 +171,10 @@ h2 {
   }
 
   .search {
+    grid-template-columns: 1fr;
+  }
+
+  .upload {
     grid-template-columns: 1fr;
   }
 }

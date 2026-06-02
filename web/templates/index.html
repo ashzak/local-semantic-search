@@ -23,6 +23,27 @@
         <button type="submit">Search</button>
       </form>
 
+      {% if notice %}
+        <p class="message success">{{ notice }}</p>
+      {% endif %}
+      {% if error %}
+        <p class="message error">{{ error }}</p>
+      {% endif %}
+
+      <section class="library">
+        <form class="upload" method="post" action="/upload" enctype="multipart/form-data">
+          <label for="file">Add document</label>
+          <input id="file" name="file" type="file" accept=".md,.txt,.rst">
+          <button type="submit">Upload</button>
+        </form>
+
+        <div class="documents">
+          {% for document in documents %}
+            <span>{{ document }}</span>
+          {% endfor %}
+        </div>
+      </section>
+
       {% if query %}
         <section class="results">
           {% for result in results %}
@@ -40,7 +61,7 @@
         </section>
       {% else %}
         <section class="empty">
-          <p>Enter a query to search the sample documents, or add your own Markdown/text files to the docs folder and reindex.</p>
+          <p>Enter a query or upload a Markdown/text document to search local content.</p>
         </section>
       {% endif %}
     </main>
