@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,8 +17,8 @@ from semantic_search.index import SearchIndex
 
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX_PATH = ROOT / "data" / "index.json"
-DOCS_PATH = ROOT / "docs"
+DOCS_PATH = Path(os.getenv("SEMANTIC_SEARCH_DOCS_PATH", ROOT / "docs"))
+INDEX_PATH = Path(os.getenv("SEMANTIC_SEARCH_INDEX_PATH", ROOT / "data" / "index.json"))
 
 app = FastAPI(title="Local Semantic Search")
 app.mount("/static", StaticFiles(directory=ROOT / "web" / "static"), name="static")

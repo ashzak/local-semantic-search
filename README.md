@@ -88,6 +88,23 @@ docker compose up --build
 
 The Docker image builds the sample index with the lightweight hashing backend. For transformer embeddings, run the Python setup locally and build the index with `--backend transformer`.
 
+## Deploy On Render
+
+This repo includes `render.yaml` for Render Blueprint deployment.
+
+1. Push the repo to GitHub.
+2. In Render, create a new Blueprint from the repository.
+3. Deploy the `local-semantic-search` web service.
+
+The free Render plan is suitable for demos, but uploaded files and generated indexes should be treated as ephemeral unless you add persistent storage.
+
+Storage paths can be configured with:
+
+```text
+SEMANTIC_SEARCH_DOCS_PATH
+SEMANTIC_SEARCH_INDEX_PATH
+```
+
 ## Manage Documents
 
 ![Upload and document management UI](assets/upload-ui.png)

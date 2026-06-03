@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: local-semantic-search
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SEMANTIC_SEARCH_DOCS_PATH
+        value: /app/docs
+      - key: SEMANTIC_SEARCH_INDEX_PATH
+        value: /app/data/index.json

@@ -1,4 +1,6 @@
 from pathlib import Path
+import subprocess
+import sys
 
 from fastapi.testclient import TestClient
 from pypdf import PdfWriter
@@ -47,6 +49,29 @@ def test_document_path_rejects_traversal(monkeypatch, tmp_path: Path) -> None:
     assert _document_path("safe.md") == docs / "safe.md"
     assert _document_path("../README.md") is None
     assert _document_path("bad.py") is None
+
+
+def test_storage_paths_can_come_from_environment(tmp_path: Path) -> None:
+    docs = tmp_path / "render-docs"
+    index = tmp_path / "render-data" / "index.json"
+    script = (
+        "import semantic_search.app as app; "
+        "print(app.DOCS_PATH); "
+        "print(app.INDEX_PATH)"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=True,
+        capture_output=True,
+        env={
+            "SEMANTIC_SEARCH_DOCS_PATH": str(docs),
+            "SEMANTIC_SEARCH_INDEX_PATH": str(index),
+        },
+        text=True,
+    )
+
+    assert result.stdout.splitlines() == [str(docs), str(index)]
 
 
 def test_document_detail_renders_source_text(monkeypatch, tmp_path: Path) -> None:
